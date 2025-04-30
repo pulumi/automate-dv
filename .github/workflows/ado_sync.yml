@@ -1,9 +1,16 @@
+permissions: write-all # Equivalent to default permissions plus id-token: write
+env:
+  ESC_ACTION_OIDC_AUTH: true
+  ESC_ACTION_OIDC_ORGANIZATION: pulumi
+  ESC_ACTION_OIDC_REQUESTED_TOKEN_TYPE: urn:pulumi:token-type:access_token:organization
+  ESC_ACTION_ENVIRONMENT: imports/github-secrets
+  ESC_ACTION_EXPORT_ENVIRONMENT_VARIABLES: false
 name: Sync issue to Azure DevOps work item
 
 on:
   issues:
     types:
-      [opened, edited, deleted, closed, reopened, labeled, unlabeled, assigned]
+[opened, edited, deleted, closed, reopened, labeled, unlabeled, assigned]
   issue_comment:
     types: [created, edited, deleted]
 
@@ -16,17 +23,20 @@ jobs:
     if: ${{ !github.event.issue.pull_request }}
     runs-on: ubuntu-latest
     steps:
+      - name: Fetch secrets from ESC
+        id: esc-secrets
+        uses: pulumi/esc-action@v1
       - uses: danhellem/github-actions-issue-to-work-item@master
         env:
-          ado_token: "${{ secrets.ADO_PERSONAL_ACCESS_TOKEN }}"
-          github_token: "${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}"
+          ado_token: "${{ steps.esc-secrets.outputs.ADO_PERSONAL_ACCESS_TOKEN }}"
+          github_token: "${{ steps.esc-secrets.outputs.GH_PERSONAL_ACCESS_TOKEN }}"
           ado_organization: "${{ vars.ADO_ORGANIZATION }}"
           ado_project: "${{ vars.ADO_PROJECT_NAME }}"
           ado_area_path: "${{ vars.ADO_AREA_PATH }}"
           ado_iteration_path: "${{ vars.ADO_ITERATION_PATH }}"
-          ado_wit: ${{ (contains(github.event.issue.title, 'FEATURE') || contains(github.event.issue.title, 'DOCS')) && 'Product Backlog Item' || 'Bug' }}         
+          ado_wit: ${{ (contains(github.event.issue.title, 'FEATURE') || contains(github.event.issue.title, 'DOCS')) && 'Product Backlog Item' || 'Bug' }}
           ado_new_state: "New"
-          ado_active_state: ${{ (contains(github.event.issue.title, 'FEATURE') || contains(github.event.issue.title, 'DOCS')) && 'Active' || 'Committed' }}         
-          ado_close_state: ${{ (contains(github.event.issue.title, 'FEATURE') || contains(github.event.issue.title, 'DOCS')) && 'Closed' || 'Done' }}  
+          ado_active_state: ${{ (contains(github.event.issue.title, 'FEATURE') || contains(github.event.issue.title, 'DOCS')) && 'Active' || 'Committed' }}
+          ado_close_state: ${{ (contains(github.event.issue.title, 'FEATURE') || contains(github.event.issue.title, 'DOCS')) && 'Closed' || 'Done' }}
           ado_bypassrules: true
           log_level: 100
