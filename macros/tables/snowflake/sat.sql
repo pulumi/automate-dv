@@ -88,7 +88,8 @@ valid_stg AS (
 {%- set use_valid_stg = is_incremental and apply_source_filter -%}
 {%- set source_table = 'valid_stg AS sd' if use_valid_stg else 'source_data AS sd' -%}
 {%- set hashdiff_alias = automate_dv.prefix([src_hashdiff], 'sd', alias_target='source') -%}
-{%- set lag_default = automate_dv.cast_binary('FFFFFFFF', quote=true) -%}
+{%- set lag_default = "'ZZZZZZZZZZZZZZ'" -%}
+{%- set lag_binary = automate_dv.cast_binary('FFFFFFFF', quote=true) -%}
 {%- set partition_by = automate_dv.prefix([src_pk], 'sd', alias_target='source') -%}
 {%- set is_bigquery = target.type == 'bigquery' -%}
 {%- set order_by = automate_dv.prefix([src_ldts], 'sd', alias_target='source') -%}
@@ -129,7 +130,7 @@ unique_source_records AS (
         LAG({{ hashdiff_alias }}, 1,
             COALESCE(
                 {{ automate_dv.prefix([src_hashdiff], 'lr', alias_target='target') }},
-                {{ lag_default }}
+                {{ lag_binary }}
             )
         ) OVER (
             PARTITION BY {{ partition_by }}
