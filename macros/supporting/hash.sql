@@ -11,12 +11,6 @@
 {%- endmacro %}
 
 
-{# Despite the name, we use SHA-224, to reduce the size of the column, without going into MD5 which risks collisions at big data volumes. #}
-{% macro hash_alg_non_hashdiff() -%}
-{% do return("SHA2([HASH_STRING_PLACEHOLDER], 224)") %}
-{% endmacro %}
-
-
 {%- macro default__dv_hash(columns, alias, is_hashdiff, columns_to_escape) -%}
 
 {%- set hash = var("hash", "md5") -%}
@@ -24,8 +18,9 @@
 {%- set null_placeholder_string = var("null_placeholder_string", "^^") -%}
 
 {%- set hash_alg = automate_dv.select_hash_alg(hash) -%}
+{# Despite the name, we use SHA-224, to reduce the size of the column, without going into MD5 which risks collisions at big data volumes. #}
 
-{%- if not is_hashdiff -%} {%- set hash_alg = hash_alg_non_hashdiff() -%} {%- endif -%}
+{%- if not is_hashdiff -%} {%- set hash_alg = "SHA2([HASH_STRING_PLACEHOLDER], 224)" -%} {%- endif -%}
 
 {%- set standardise = automate_dv.standard_column_wrapper() %}
 
