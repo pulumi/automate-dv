@@ -1,3 +1,15 @@
+
+{%- macro dv_hash(columns=none, alias=none, is_hashdiff=false, columns_to_escape=none) -%}
+
+    {%- if is_hashdiff is none -%}
+        {%- set is_hashdiff = false -%}
+    {%- endif -%}
+
+    {{- adapter.dispatch('dv_hash', 'automate_dv')(columns=columns, alias=alias,
+                                             is_hashdiff=is_hashdiff, columns_to_escape=columns_to_escape) -}}
+
+{%- endmacro %}
+
 {%- macro default__dv_hash(columns, alias, is_hashdiff, columns_to_escape) -%}
 
 {%- set hash = var("hash", "md5") -%}
